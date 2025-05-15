@@ -1,6 +1,7 @@
 import telebot
 import yt_dlp
 import os
+from flask import Flask
 
 # Obtener el token desde las variables de entorno en Render
 TOKEN = os.getenv("TOKEN")
@@ -71,4 +72,14 @@ def process_selection(call):
 
     os.remove(output_filename)
 
-bot.polling()
+# 🔧 Servidor HTTP falso para evitar errores en Render
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot funcionando en Render"
+
+if __name__ == "__main__":
+    from threading import Thread
+    Thread(target=bot.polling).start()
+    app.run(host="0.0.0.0", port=8080)
