@@ -2,7 +2,7 @@ import telebot
 import yt_dlp
 import os
 
-TOKEN = "8180217637:AAEOUaaQUIoYNjKKsDvJXbvvHJWjHmdR9wg"
+TOKEN = os.getenv("8180217637:AAEOUaaQUIoYNjKKsDvJXbvvHJWjHmdR9wg")
 bot = telebot.TeleBot(TOKEN)
 
 # Diccionario para almacenar elecciones de calidad por usuario
