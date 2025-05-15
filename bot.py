@@ -19,7 +19,11 @@ def list_video_details(message):
     url = message.text
     bot.reply_to(message, "Obteniendo opciones de calidad...")
 
-    ydl_opts = {"listformats": True}
+    ydl_opts = {
+        "format_sort": ["res:360", "res:480", "res:720", "res:1080"],
+        "listformats": True
+    }
+    
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)
 
@@ -34,7 +38,7 @@ def list_video_details(message):
         fps = fmt.get("fps", "N/A")
         audio_channels = fmt.get("audio_channels")
 
-        # Filtrar formatos que incluyan audio y tengan las resoluciones deseadas
+        # Solo opciones que tengan audio y las resoluciones deseadas
         if resolution in target_resolutions and audio_channels:
             details = f"{format_id} - {resolution} - {fps} FPS - {ext}"
             button = telebot.types.InlineKeyboardButton(details, callback_data=f"video_{format_id}")
