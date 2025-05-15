@@ -2,7 +2,7 @@ import telebot
 import yt_dlp
 import os
 
-# Obtener el token desde las variables de entorno (Render)
+# Obtener el token desde las variables de entorno en Render
 TOKEN = os.getenv("TOKEN")
 bot = telebot.TeleBot(TOKEN)
 
