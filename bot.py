@@ -21,7 +21,7 @@ def list_video_details(message):
 
     ydl_opts = {
         "format_sort": ["res:360", "res:480", "res:720", "res:1080"],
-        "cookies-from-browser": "brave",  # Usa las cookies de Brave para autenticarse
+        "cookies": "cookies.txt",  # Usa cookies extraídas de Brave
         "listformats": True
     }
     
@@ -67,14 +67,14 @@ def process_selection(call):
     ydl_opts = {
         "format": format_id,
         "outtmpl": output_filename,
-        "cookies-from-browser": "brave"  # Usa cookies desde el navegador Brave
+        "cookies": "cookies.txt"  # Usa cookies extraídas de Brave
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
             ydl.download([url])
         except yt_dlp.utils.DownloadError:
-            bot.send_message(call.message.chat.id, "Error: YouTube requiere autenticación. Verifica que Brave está abierto.")
+            bot.send_message(call.message.chat.id, "Error: YouTube requiere autenticación. Por favor, actualiza las cookies.")
 
     # Subimos el archivo a Telegram para que el usuario lo descargue
     if os.path.exists(output_filename):
