@@ -14,10 +14,6 @@ user_choices = {}
 def send_welcome(message):
     bot.reply_to(message, "¡Hola! Envíame un enlace de YouTube y te mostraré las opciones de descarga.")
 
-@bot.message_handler(commands=["audio"])
-def audio_mode(message):
-    bot.reply_to(message, "Envíame un enlace de YouTube para descargar solo el audio.")
-
 @bot.message_handler(func=lambda message: "youtube.com" in message.text or "youtu.be" in message.text)
 def list_video_details(message):
     url = message.text
@@ -29,22 +25,28 @@ def list_video_details(message):
 
     formats = info.get("formats", [])
     keyboard = telebot.types.InlineKeyboardMarkup()
+    target_resolutions = ["360p", "480p", "720p", "1080p"]
 
     for fmt in formats:
-        if fmt.get("format_id") and fmt.get("resolution"):
-            details = f"{fmt['format_id']} - {fmt['resolution']} - {fmt.get('fps', 'N/A')} FPS"
-            button = telebot.types.InlineKeyboardButton(details, callback_data=f"video_{fmt['format_id']}")
+        resolution = fmt.get("resolution")
+        format_id = fmt.get("format_id")
+        ext = fmt.get("ext", "N/A")
+        fps = fmt.get("fps", "N/A")
+        audio_channels = fmt.get("audio_channels")
+
+        # Filtrar formatos que incluyan audio y tengan las resoluciones deseadas
+        if resolution in target_resolutions and audio_channels:
+            details = f"{format_id} - {resolution} - {fps} FPS - {ext}"
+            button = telebot.types.InlineKeyboardButton(details, callback_data=f"video_{format_id}")
             keyboard.add(button)
 
-        if "audio" in fmt.get("format", "").lower():
-            audio_details = f"{fmt['format_id']} - {fmt.get('abr', 'N/A')} kbps"
-            button = telebot.types.InlineKeyboardButton(audio_details, callback_data=f"audio_{fmt['format_id']}")
-            keyboard.add(button)
+    if keyboard.keyboard:
+        bot.send_message(message.chat.id, "Selecciona la calidad que deseas:", reply_markup=keyboard)
+        user_choices[message.chat.id] = url
+    else:
+        bot.send_message(message.chat.id, "No se encontraron calidades compatibles.")
 
-    bot.send_message(message.chat.id, "Selecciona la calidad que deseas:", reply_markup=keyboard)
-    user_choices[message.chat.id] = url
-
-@bot.callback_query_handler(func=lambda call: call.data.startswith("video_") or call.data.startswith("audio_"))
+@bot.callback_query_handler(func=lambda call: call.data.startswith("video_"))
 def process_selection(call):
     format_id = call.data.split("_")[1]
     url = user_choices.get(call.message.chat.id)
@@ -55,8 +57,7 @@ def process_selection(call):
 
     bot.send_message(call.message.chat.id, f"Preparando descarga en formato {format_id}, espera un momento...")
 
-    file_extension = "mp4" if call.data.startswith("video") else "mp3"
-    output_filename = f"media.{file_extension}"
+    output_filename = "video.mp4"
 
     ydl_opts = {
         "format": format_id,
