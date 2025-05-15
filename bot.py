@@ -21,6 +21,7 @@ def list_video_details(message):
 
     ydl_opts = {
         "format_sort": ["res:360", "res:480", "res:720", "res:1080"],
+        "cookies-from-browser": "brave",  # Usa las cookies de Brave para autenticarse
         "listformats": True
     }
     
@@ -65,17 +66,21 @@ def process_selection(call):
 
     ydl_opts = {
         "format": format_id,
-        "outtmpl": output_filename
+        "outtmpl": output_filename,
+        "cookies-from-browser": "brave"  # Usa cookies desde el navegador Brave
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+        try:
+            ydl.download([url])
+        except yt_dlp.utils.DownloadError:
+            bot.send_message(call.message.chat.id, "Error: YouTube requiere autenticación. Verifica que Brave está abierto.")
 
-    # Subimos el archivo a Telegram para que el usuario lo descargue cuando quiera
-    with open(output_filename, "rb") as media_file:
-        bot.send_document(call.message.chat.id, media_file)
-
-    os.remove(output_filename)
+    # Subimos el archivo a Telegram para que el usuario lo descargue
+    if os.path.exists(output_filename):
+        with open(output_filename, "rb") as media_file:
+            bot.send_document(call.message.chat.id, media_file)
+        os.remove(output_filename)
 
 # 🔧 Servidor HTTP falso para evitar errores en Render
 app = Flask(__name__)
