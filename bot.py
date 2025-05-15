@@ -2,7 +2,8 @@ import telebot
 import yt_dlp
 import os
 
-TOKEN = os.getenv("8180217637:AAEOUaaQUIoYNjKKsDvJXbvvHJWjHmdR9wg")
+# Obtener el token desde las variables de entorno (Render)
+TOKEN = os.getenv("TOKEN")
 bot = telebot.TeleBot(TOKEN)
 
 # Diccionario para almacenar elecciones de calidad por usuario
@@ -26,7 +27,6 @@ def list_video_details(message):
         info = ydl.extract_info(url, download=False)
 
     formats = info.get("formats", [])
-    available_qualities = []
     keyboard = telebot.types.InlineKeyboardMarkup()
 
     for fmt in formats:
@@ -67,10 +67,7 @@ def process_selection(call):
 
     # Subimos el archivo a Telegram para que el usuario lo descargue cuando quiera
     with open(output_filename, "rb") as media_file:
-        if file_extension == "mp4":
-            bot.send_document(call.message.chat.id, media_file)
-        else:
-            bot.send_document(call.message.chat.id, media_file)
+        bot.send_document(call.message.chat.id, media_file)
 
     os.remove(output_filename)
 
